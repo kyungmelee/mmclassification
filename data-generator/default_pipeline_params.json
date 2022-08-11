@@ -1,0 +1,112 @@
+{
+	"classifier_type": "classifier",
+	"calculate_balanced_classifier_kpis": true,
+	"use_bottom_images_for_classifier": false,
+	"classifier_params": {
+		"model_architecture": "mobileNet",
+		"model_path": "D:\\00.CommonProduct\\00.WFMI_2D\\Test Images\\JU2\\best.pth",
+		"num_classes": 2,
+		"patch_size": 128,
+		"probability_threshold": 0.49
+	},
+	"feature_classifier_params": {
+		"model_architecture": "wide_resnet50_2",
+		"threshold": 2.5,
+		"crop_sizes": [
+			128,
+			64,
+			32
+		],
+		"holes_mask_threshold": 40,
+		"visualize_result": false
+	},
+	"contrast_detector_params": {
+		"contrast_image_params": {
+			"kernel_size": 21,
+			"threads_per_block": [
+				16,
+				16
+			]
+		},
+		"thres_mode":"hyst",
+		"min_contrast_value": 2, 
+		"hyst_low_thr": 1.1,
+		"hyst_high_thr": 2		
+	},
+	"colored_detector_params": {
+		"diff_h_threshold": 20,
+		"diff_s_threshold": 30,
+		"kernel_size": 21,
+		"threads_per_block": [
+			16,
+			16
+		],
+		"white_region_masking_params": {
+			"white_thr": 200,
+			"dilation_k_size": 9,
+			"erosion_k_size": 5
+		},
+		"stability_masking_params": {
+			"diff_coeff": 0.04,
+			"thr_h_local": 8,
+			"thr_s_local": 8
+		}
+	},
+	"anomaly_detector_params": {
+        "kernel_size": 21,
+        "min_anomaly_area": 25,
+        "min_contrast_value": 2,
+        "threads_per_block": [16, 16]
+    },
+	"ground_truth_contour_params" :
+	{
+		"min_anomaly_area": 25,
+		"min_contrast_value": 2,
+		"kernel_size": 21
+	},
+	"luminance_image_params" :
+	{
+		"threads_per_block": [
+			16,
+			16
+		]
+	},
+	"edgereflections_candidates_params": {
+		"intersection_rate": 0.8
+	},
+	"filter_luminance_params":{
+		"luminance_thr_m": 0.1,
+		"luminance_thr_b": 0.1
+	},
+	"filter_contrast_params":{
+		"nc_dilation_k_size": 13,
+		"near_contrast_thr":2.5
+	},
+	"filter_size_params":{
+		"valid_blob_TH" : 50
+	},
+	
+	"filter_Similarity_params":{
+		"connections_dilation_k_size" : 3,
+		"similarity_diff_threshold" : 2
+	},
+	"rgb_detector_params": {
+        "white_thr": 200,
+        "white_dilation_k_size": 3,
+        "kernel_size": 15,
+        "threads_per_block": [16, 16],
+        "r_diff_thr": 80,
+        "g_diff_thr": 80,
+        "b_diff_thr": 80,
+        "opening_k_size": 5
+    },
+	"return_detailed_detector_results": true,
+	"detailed_detector_results_file_path": "detector_results.csv",
+	"return_detailed_classifier_results": true,
+	"detailed_classifier_results_file_path": "classifier_results.csv",
+	"return_detailed_classifier_balanced_results": true,
+	"detailed_classifier_balanced_results_file_path": "classifier_balanced_results.csv",
+	"save_result_image_tensorboard" : false,
+	"save_detailed_result_image_tensorboard" : false
+	
+}
