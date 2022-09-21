@@ -360,4 +360,8 @@ class MMClsWandbHook(WandbLoggerHook):
             aliases = ['latest', f'epoch_{idx}']
         else:
             aliases = ['latest', f'iter_{idx}']
+      
         self.wandb.run.log_artifact(pred_artifact, aliases=aliases)
+        pred = np.array(self.eval_table.data)[:,5:]
+        self.wandb.run.log({"ROC": self.wandb.plot.roc_curve(self.eval_table.get_column('ground_truth'), pred, labels = list(self.val_dataset.CLASSES))})
+        self.wandb.run.log({"PR": self.wandb.plot.pr_curve(self.eval_table.get_column('ground_truth'), pred, labels = list(self.val_dataset.CLASSES))})
