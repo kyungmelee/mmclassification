@@ -430,39 +430,6 @@ class RandomGrayscale(object):
     def __repr__(self):
         return self.__class__.__name__ + f'(gray_prob={self.gray_prob})'
 
-@PIPELINES.register_module()
-class ConvertGrayscale(object):
-    """all convert image to grayscale with a probability of gray_prob.
-
-    Returns:
-        ndarray: Image after all grayscale transform.
-
-    Notes:
-        - If input image is 3 channel: grayscale version is 1 channel
-          with (r + g + b) / 3 or luminance
-    """
-
-    def __init__(self, mode = 'average'):
-        self.mode = mode
-
-    def __call__(self, results):
-        """
-        Args:
-            img (ndarray): Image to be converted to grayscale.
-
-        Returns:
-            ndarray: Randomly grayscaled image.
-        """
-        for key in results.get('img_fields', ['img']):
-            img = results[key]
-            num_output_channels = img.shape[2]
-            if num_output_channels > 1:
-                img = mmcv.rgb2gray(img)[:, :, None]
-            results[key] = img
-        return results
-
-    def __repr__(self):
-        return self.__class__.__name__ + f'(mode={self.mode})'
 
 @PIPELINES.register_module()
 class RandomFlip(object):
