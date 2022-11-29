@@ -132,3 +132,9 @@ venv.bak/
 *.pvti-journal
 /cache_engine
 /report
+*.csv
+artifacts/
+data-generator/laplacian_example/
+data-generator/laplacian_new_example/
+data-hs-ju2/
+wandb/
