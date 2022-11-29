@@ -464,6 +464,33 @@ class ConvertGrayscale(object):
         return self.__class__.__name__ + f'(mode={self.mode})'
 
 @PIPELINES.register_module()
+class ConvertFloatImage(object):
+    """all convert image to grayscale with a probability of gray_prob.
+
+    Returns:
+        ndarray: Image after all grayscale transform.
+
+    Notes:
+        - If input image is 3 channel: grayscale version is 1 channel
+          with (r + g + b) / 3 or luminance
+    """
+    def __call__(self, results):
+        """
+        Args:
+            img (ndarray): Image to be converted to grayscale.
+
+        Returns:
+            ndarray: Randomly grayscaled image.
+        """
+        for key in results.get('img_fields', ['img']):
+            img = results[key]
+            results[key] = img.astype(dtype='double')
+        return results
+
+    def __repr__(self):
+        return self.__class__.__name__ + f'(mode={self.mode})'
+
+@PIPELINES.register_module()
 class RandomFlip(object):
     """Flip the image randomly.
 
@@ -1172,3 +1199,71 @@ class Albu(object):
     def __repr__(self):
         repr_str = self.__class__.__name__ + f'(transforms={self.transforms})'
         return repr_str
+
+
+@PIPELINES.register_module()
+class SaltAndPepperNoise(object):
+    """Add noise to the image.
+
+    Args:
+        min_rate (sequence): minimum rate of noise to be added relative to image size.
+        max_rate (sequence): maximum rate of noise to be added relative to image size.
+        is_rgb (bool): Whether to convert the image from BGR to RGB,
+            default is true.
+    """
+
+    def __init__(self, min_rate, max_rate, is_rgb=True):
+        self.min_rate = np.array(min_rate, dtype=np.float32)
+        self.max_rate = np.array(max_rate, dtype=np.float32)
+        self.is_rgb = is_rgb
+
+    def __call__(self, results):
+        for key in results.get('img_fields', ['img']):
+            results[key] = self.__add_noise__(results[key], self.min_rate, self.max_rate, self.is_rgb)
+        results['img_noise_salt_and_pepper'] = dict(
+            min_rate=self.min_rate, max_rate=self.max_rate, is_rgb=self.is_rgb)
+        return results
+
+    def __repr__(self):
+        repr_str = self.__class__.__name__
+        repr_str += f'(min_rate={list(self.min_rate)}, '
+        repr_str += f'max_rate={list(self.max_rate)}, '
+        repr_str += f'is_rgb={self.is_rgb})'
+        return repr_str
+
+    def __add_noise__(self, img, min_rate, max_rate, is_rgb):
+        # Getting the dimensions of the image
+        row = img.shape[0]
+        col = img.shape[1]
+        area = row * col 
+        # Randomly pick some pixels in the
+        # image for coloring them white 
+        # Pick a random number between area * min_rate and area * max_rate
+        number_of_pixels = random.randint((int)(area * min_rate), (int)(area * max_rate))
+        for i in range(number_of_pixels):
+        
+            # Pick a random y coordinate
+            y_coord=random.randint(0, row - 1)
+            
+            # Pick a random x coordinate
+            x_coord=random.randint(0, col - 1)
+            
+            # Color that pixel to white
+            img[y_coord][x_coord] = 255
+            
+        # Randomly pick some pixels in
+        # the image for coloring them black
+        # Pick a random number between area * min_rate and area * max_rate
+        number_of_pixels = random.randint((int)(area * min_rate), (int)(area * max_rate))
+        for i in range(number_of_pixels):
+        
+            # Pick a random y coordinate
+            y_coord=random.randint(0, row - 1)
+            
+            # Pick a random x coordinate
+            x_coord=random.randint(0, col - 1)
+            
+            # Color that pixel to black
+            img[y_coord][x_coord] = 0
+
+        return img
