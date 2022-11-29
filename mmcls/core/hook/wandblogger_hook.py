@@ -157,7 +157,6 @@ class MMClsWandbHook(WandbLoggerHook):
             # Log ground truth data
             self._log_data_table()
 
-
     @master_only
     def after_train_epoch(self, runner):
         super(MMClsWandbHook, self).after_train_epoch(runner)
@@ -271,14 +270,9 @@ class MMClsWandbHook(WandbLoggerHook):
         # Get image loading pipeline
         from mmcls.datasets.pipelines import LoadImageFromFile
         img_loader = None
-        if hasattr(self.val_dataset, 'pipeline'):
-            for t in self.val_dataset.pipeline.transforms:
-                if isinstance(t, LoadImageFromFile):
-                    img_loader = t
-        elif hasattr(self.val_dataset, 'dataset'): #kfold
-            for t in self.val_dataset.dataset.pipeline.transforms:
-                    if isinstance(t, LoadImageFromFile):
-                        img_loader = t
+        for t in self.val_dataset.pipeline.transforms:
+            if isinstance(t, LoadImageFromFile):
+                img_loader = t
 
         CLASSES = self.val_dataset.CLASSES
         self.eval_image_indexs = np.arange(len(self.val_dataset))
@@ -287,37 +281,20 @@ class MMClsWandbHook(WandbLoggerHook):
         np.random.shuffle(self.eval_image_indexs)
         self.eval_image_indexs = self.eval_image_indexs[:self.num_eval_images]
 
-        if hasattr(self.val_dataset, 'pipeline'):
-            for idx in self.eval_image_indexs:
-                img_info = self.val_dataset.data_infos[idx]
-                if img_loader is not None:
-                    img_info = img_loader(img_info)
-                    # Get image and convert from BGR to RGB
-                    image = img_info['img'][..., ::-1]
-                else:
-                    # For CIFAR dataset.
-                    image = img_info['img']
-                image_name = img_info.get('filename', f'img_{idx}')
-                gt_label = img_info.get('gt_label').item()
+        for idx in self.eval_image_indexs:
+            img_info = self.val_dataset.data_infos[idx]
+            if img_loader is not None:
+                img_info = img_loader(img_info)
+                # Get image and convert from BGR to RGB
+                image = img_info['img'][..., ::-1]
+            else:
+                # For CIFAR dataset.
+                image = img_info['img']
+            image_name = img_info.get('filename', f'img_{idx}')
+            gt_label = img_info.get('gt_label').item()
 
-                self.data_table.add_data(image_name, self.wandb.Image(image),
-                                        CLASSES[gt_label])
-
-        elif hasattr(self.val_dataset, 'dataset'): #kfold
-            for idx in self.eval_image_indexs:
-                img_info = self.val_dataset.dataset.data_infos[idx]
-                if img_loader is not None:
-                    img_info = img_loader(img_info)
-                    # Get image and convert from BGR to RGB
-                    image = img_info['img'][..., ::-1]
-                else:
-                    # For CIFAR dataset.
-                    image = img_info['img']
-                image_name = img_info.get('filename', f'img_{idx}')
-                gt_label = img_info.get('gt_label').item()
-
-                self.data_table.add_data(image_name, self.wandb.Image(image),
-                                        CLASSES[gt_label])
+            self.data_table.add_data(image_name, self.wandb.Image(image),
+                                     CLASSES[gt_label])
 
     def _add_predictions(self, results, idx):
         table_idxs = self.data_table_ref.get_index()
